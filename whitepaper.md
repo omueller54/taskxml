@@ -1,6 +1,6 @@
 #An XML exchange format for (programming) tasks
 
-**Version 0.9.3**
+**Version 0.9.4**
 
 contributors listed in alphabetical order:
 
@@ -54,7 +54,7 @@ the XML document.
 The general structure of the XML format is given as follows (this is
 meant to provide an overview and does not represent a minimal document):
 
-    <task lang="[LANG code]" xmlns="urn:proforma:task:v0.9.3">
+    <task lang="[LANG code]" xmlns="urn:proforma:task:v0.9.4">
     <description></description>
     <proglang version=""></proglang>
     <submission />
@@ -90,15 +90,19 @@ The following code shows the XML Schema for the Task Format:
             </xs:sequence>
             <xs:attribute name="lang" type="xs:string" use="required"/>
         </xs:complexType>
-            <xs:keyref name="tests-filerefs-fileref" refer="fileid">
-             <xs:selector xpath="tests/test/test-configuration/filerefs"/>
-             <xs:field xpath="fileref"/>
-         </xs:keyref>
+        <xs:keyref name="tests-filerefs-fileref" refer="fileid">
+             <xs:selector xpath="tests/test/test-configuration/filerefs/fileref"/>
+             <xs:field xpath="@refid"/>
+        </xs:keyref>
+        <xs:keyref name="tests-extresrefs-extresref" refer="external-resourceid">
+             <xs:selector xpath="tests/test/test-configuration/externalresourcerefs/externalresourceref"/>
+             <xs:field xpath="@refid"/>
+        </xs:keyref>
     </xs:element>
 
 The document root element “task” holds the XML-namespace URI for the
 current version number of the XML Task Format. The only currently valid
-value is “urn:proforma:task:v0.9.3”. The task itself must have an
+value is “urn:proforma:task:v0.9.4”. The task itself must have an
 attribute “lang” which specifies the natural language used. The
 description, title etc should be written in this language. The content
 of the “lang” attribute must comply with the IETF BCP 47, RFC 4647 and
@@ -113,15 +117,15 @@ subset of HTML is allowed (see Appendix A).
 
 ###The proglang part
 
-   <xs:element name="proglang">
-     <xs:complexType>
+    <xs:element name="proglang">
+      <xs:complexType>
          <xs:simpleContent>
              <xs:extension base="xs:string">
                  <xs:attribute name="version" type="xs:string" use="required"/>
              </xs:extension>
          </xs:simpleContent>
-     </xs:complexType>
-   </xs:element>
+      </xs:complexType>
+    </xs:element>
 
 An instance of this element contains the programming/modelling/query
 language to which this task applies. A valid list of values is specified
@@ -176,10 +180,10 @@ be specified explicitly.
                 <xs:element ref="file"/>
             </xs:sequence>
         </xs:complexType>
-            <xs:key name="fileid">
+        <xs:key name="fileid">
              <xs:selector xpath="file"/>
              <xs:field xpath="@id"/>
-         </xs:key>
+        </xs:key>
     </xs:element>
 
 The files element contains 0 or more file elements. A file element is
@@ -188,8 +192,8 @@ the XML file.
 
 ###The file element
 
-   <xs:element name="file">
-     <xs:complexType>
+    <xs:element name="file">
+      <xs:complexType>
          <xs:simpleContent>
              <xs:extension base="xs:string">
                  <xs:attribute name="id" type="xs:string" use="required"/>
@@ -216,8 +220,8 @@ the XML file.
                  </xs:attribute>
              </xs:extension>
          </xs:simpleContent>
-     </xs:complexType>
-   </xs:element>
+      </xs:complexType>
+    </xs:element>
 
 The file element includes or links a single file to a task. Each
 instance/file must have a (task) unique string in its “id” attribute (in
@@ -328,10 +332,10 @@ the task. For each model-solution a new model-solution element is added.
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
-            <xs:unique name="model-solutionid">
+        <xs:unique name="model-solutionid">
              <xs:selector xpath="model-solution"/>
              <xs:field xpath="@id"/>
-         </xs:unique>
+        </xs:unique>
     </xs:element>
 
 The model-solution element includes or links a single model-solution to
@@ -401,7 +405,7 @@ The general structure of the test description is given as follows:
                 </externalresourcerefs>
             </test-configuration>
             <test-meta-data />
-    </test>
+        </test>
     </tests>
 
 The corresponding XML schema for the test XML structure is:
@@ -412,10 +416,10 @@ The corresponding XML schema for the test XML structure is:
                 <xs:element ref="test"/>
             </xs:sequence>
         </xs:complexType>
-            <xs:unique name="testids">
+        <xs:unique name="testids">
              <xs:selector xpath="test"/>
              <xs:field xpath="@id"/>
-         </xs:unique>
+        </xs:unique>
     </xs:element>
 
 ###The test element
@@ -487,40 +491,80 @@ configuration options.
     <xs:element name="filerefs">
         <xs:complexType>
             <xs:sequence minOccurs="0" maxOccurs="unbounded">
-                    <xs:element ref="fileref"/>
+                <xs:element ref="fileref"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
 
-Several filerefs can be specified via file elements.
+Several filerefs can be specified via fileref elements.
 
 ###The fileref element
 
-    <xs:element name="fileref" type="xs:string"/>
+    <xs:element name="fileref">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:tags" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="refid" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
 
 The fileref element links a single file to a test based on the ID of the
 file which has to be defined in task/files. The ID has to be entered as
-the simple content of the fileref element.
+the refid attribute.
 
-###The externalconfigurationrefs part
+Tagging of referenced files as an extension mechanism for attaching grader 
+specific meanings to files can be accomplished by inserting an optional tags 
+child element.
 
-    <xs:element name="externalconfigurationrefs">
+
+###The externalresourcerefs part
+
+    <xs:element name="externalresourcerefs">
         <xs:complexType>
             <xs:sequence minOccurs="0" maxOccurs="unbounded">
-                    <xs:element ref="externalconfigurationref"/>
+                <xs:element ref="externalresourceref"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
 
-Several externalconfigurationrefs can be specified via externalconfigurationref elements.
+Several externalresourcerefs can be specified via externalresourceref elements.
 
-###The externalconfigurationref element
+###The externalresourceref element
 
-    <xs:element name="externalconfigurationref" type="xs:string"/>
+    <xs:element name="externalresourceref">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:tags" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="refid" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
 
-The externalconfigurationref element links a single external-configuration to a test based on the ID of the
-external-configuration which has to be defined in task/external-configurations. The ID has to be entered as
-the simple content of the externalconfigurationref element.
+The externalresourceref element links a single external-resource to a test based on the ID of the
+external-resource which has to be defined in task/external-resources. The ID has to be entered as
+the refid attribute.
+
+Tagging of external resources is possible as it is for fileref elements (see there).
+
+###The tags part
+
+    <xs:element name="tags">
+        <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="tag"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+Several tags can be specified via tag elements.
+
+###The tag element
+
+    <xs:element name="tag" type="xs:string"/>
+
+The tag element puts a string label to a fileref or an externalresourceref element. The meaning of a tag is not defined by this exchange format. Tags can be seen as an extension point of the exchange format, where graders can define their own tags with their own grader specific meaning. Tagging can be useful for example when the class attribute of a file does not provide sufficient information for the grader to derive a file's role played during the grading process.
+
 
 ###The test-meta-data element
 
