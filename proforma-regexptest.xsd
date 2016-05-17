@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns1="urn:proforma:tests:regexptest:v1" targetNamespace="urn:proforma:tests:regexptest:v1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:element name="regexptest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="entry-point" type="xs:string"/>
+                <xs:element name="parameter" minOccurs="0">
+                    <xs:simpleType>
+                        <xs:list itemType="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="regexp" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                                <xs:attribute name="not-allowed" type="xs:boolean" default="false"/>
+                                <xs:attribute name="case-insensitive" default="false"/>
+                                <xs:attribute name="dotall" default="false"/>
+                                <xs:attribute name="multiline" default="false"/>
+                                <xs:attribute name="free-spacing" default="false"/>
+                            </xs:extension>
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="timeout" minOccurs="0">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:positiveInteger">
+                            <xs:minInclusive value="1"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
